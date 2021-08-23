@@ -1,3 +1,4 @@
+import { EventEmitter } from "@prof-dev/event-emitter";
 import { arrayEqual } from "./utils";
 
 type ImprovedSelectInfo = {
@@ -8,24 +9,18 @@ type ImprovedSelectInfo = {
   select: HTMLSelectElement | null;
 };
 type ImprovedSelectEventType = "open" | "close" | "toggle" | "change";
-type ImprovedSelectEventListener = (info: ImprovedSelectInfo) => void;
 
 const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
 
-export class ImprovedSelect {
+export class ImprovedSelect extends EventEmitter<
+  ImprovedSelectEventType,
+  ImprovedSelect
+> {
   private isActive = false;
   private isSearchActive = false;
   private isSelected = false;
   private toggleElements: HTMLElement[] = [];
   private closeElements: HTMLElement[] = [];
-  private events: {
-    [key in ImprovedSelectEventType]: ImprovedSelectEventListener[];
-  } = {
-    open: [],
-    close: [],
-    toggle: [],
-    change: [],
-  };
   private select: HTMLSelectElement | null;
   private selectBody: HTMLSelectElement | null;
   private searchInput: HTMLSelectElement | null;
@@ -36,6 +31,7 @@ export class ImprovedSelect {
   private isHtmlValue: boolean = false;
 
   constructor(private element: HTMLElement) {
+    super();
     this.isActive = this.element.classList.contains("is-active");
     this.isHtmlValue = this.element.hasAttribute("data-select-html-value");
     this.toggleElements = Array.from(
@@ -141,7 +137,7 @@ export class ImprovedSelect {
 
     if (this.select) {
       this.select.addEventListener("change", () => {
-        this.dispatch("change");
+        this.dispatch("change", this);
       });
     }
 
@@ -288,20 +284,20 @@ export class ImprovedSelect {
     if (this.element.hasAttribute("data-improved-select-modal")) {
       document.body.classList.toggle("no-scroll", this.isActive);
     }
-    this.dispatch("toggle");
+    this.dispatch("toggle", this);
   }
 
   open() {
     if (this.isActive === false) {
       this.toggle(true);
-      this.dispatch("open");
+      this.dispatch("open", this);
     }
   }
 
   close() {
     if (this.isActive) {
       this.toggle(false);
-      this.dispatch("close");
+      this.dispatch("close", this);
     }
   }
 
@@ -317,20 +313,6 @@ export class ImprovedSelect {
         }
       });
     }
-  }
-
-  on(type: ImprovedSelectEventType, listener: ImprovedSelectEventListener) {
-    this.events[type].push(listener);
-  }
-
-  off(type: ImprovedSelectEventType, listener: ImprovedSelectEventListener) {
-    this.events[type] = this.events[type].filter((l) => l !== listener);
-  }
-
-  dispatch(type: ImprovedSelectEventType) {
-    this.events[type].forEach((listener) => {
-      listener(this.info());
-    });
   }
 
   reset() {
