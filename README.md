@@ -10,6 +10,20 @@ npm i @prof-dev/improved-select
 
 ### Usage
 
+#### Styles
+
+```typescript
+import "@prof-dev/improved-select/lib/improved-select.css";
+```
+
+or
+
+```scss
+@import "@prof-dev/improved-select/lib/improved-select.css";
+```
+
+#### Code
+
 ```typescript
 import { ImprovedSelect } from "@prof-dev/improved-select";
 
