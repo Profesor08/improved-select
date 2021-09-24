@@ -322,13 +322,13 @@ export class ImprovedSelect extends EventEmitter<
     }
   }
 
-  reset() {
+  reset = () => {
     if (this.select) {
       Array.from(this.select.options).forEach((option) => {
         option.selected = false;
       });
 
-      for (const index of this.initialSelection) {
+      for (const index of this.defaultSelection) {
         if (this.select.options[index] !== undefined) {
           this.select.options[index].selected = true;
         }
@@ -340,7 +340,7 @@ export class ImprovedSelect extends EventEmitter<
         }),
       );
     }
-  }
+  };
 
   clear() {
     if (this.select) {
