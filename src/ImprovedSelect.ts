@@ -54,6 +54,7 @@ export class ImprovedSelect extends EventEmitter<
     this.initSelectBehavior();
     this.initSearchBehavior();
     this.initChangeStateBehavior();
+    this.initResetBehavior();
     this.updateActiveState();
     this.element.setAttribute("data-improved-select", "initialized");
     this.element.classList.toggle(
@@ -158,6 +159,12 @@ export class ImprovedSelect extends EventEmitter<
     this.on("toggle", () => {
       this.resetSearchState();
     });
+  }
+
+  private initResetBehavior() {
+    if (this.select) {
+      this.select.addEventListener("reset", this.reset);
+    }
   }
 
   private updateActiveState() {
