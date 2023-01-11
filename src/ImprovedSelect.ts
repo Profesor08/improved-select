@@ -1,4 +1,11 @@
 import { EventEmitter } from "@prof-dev/event-emitter";
+import {
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from "@floating-ui/dom";
 import { arrayEqual } from "./utils";
 
 type ImprovedSelectInfo = {
@@ -8,27 +15,28 @@ type ImprovedSelectInfo = {
   element: HTMLElement;
   select: HTMLSelectElement | null;
 };
-type ImprovedSelectEventType = "open" | "close" | "toggle" | "change";
+type SelectEventType = "open" | "close" | "toggle" | "change";
 
 const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
 
-export class ImprovedSelect extends EventEmitter<
-  ImprovedSelectEventType,
-  ImprovedSelect
-> {
+class Select extends EventEmitter<SelectEventType, ImprovedSelect> {}
+
+export class ImprovedSelect extends Select {
   private isActive = false;
   private isSearchActive = false;
   private isSelected = false;
   private toggleElements: HTMLElement[] = [];
+  private activeToggleElement?: HTMLElement;
   private closeElements: HTMLElement[] = [];
   private select: HTMLSelectElement | null;
-  private selectBody: HTMLSelectElement | null;
-  private searchInput: HTMLSelectElement | null;
+  private selectBody: HTMLElement | null;
+  private searchInput: HTMLInputElement | null;
   private linkedOptions: HTMLElement[] = [];
   private selectedValueElements: HTMLElement[] = [];
   private initialSelection: number[] = [];
   private defaultSelection: number[] = [];
   private isHtmlValue: boolean = false;
+  private cleanup?: () => void;
 
   constructor(private element: HTMLElement) {
     super();
@@ -88,19 +96,15 @@ export class ImprovedSelect extends EventEmitter<
   private initToggleBehavior() {
     this.toggleElements.forEach((toggleElement) => {
       toggleElement.addEventListener("click", () => {
-        if (this.isActive) {
+        this.activeToggleElement = toggleElement;
+
+        if (this.isActive === true) {
           this.close();
         } else {
           this.toggle();
         }
       });
     });
-
-    if (this.element.hasAttribute("data-improved-select-modal") === false) {
-      this.on("toggle", () => {
-        this.fixBodyVisibility();
-      });
-    }
   }
 
   private initCloseBehavior() {
@@ -114,13 +118,15 @@ export class ImprovedSelect extends EventEmitter<
   private initSelectBehavior() {
     this.linkedOptions.forEach((linkedOption, index) => {
       linkedOption.addEventListener("click", () => {
-        if (this.select && this.select.options[index]) {
+        if (this.select !== null && this.select.options[index] !== undefined) {
           const option = this.select.options[index];
 
-          if (this.select.multiple) {
-            option.selected = !option.selected;
-          } else {
-            option.selected = true;
+          if (option !== undefined) {
+            if (this.select.multiple) {
+              option.selected = !option.selected;
+            } else {
+              option.selected = true;
+            }
           }
 
           this.select.dispatchEvent(
@@ -222,7 +228,9 @@ export class ImprovedSelect extends EventEmitter<
 
       if (this.select) {
         Array.from(this.select.options).forEach((option, index) => {
-          if (this.linkedOptions[index]) {
+          const linkedOption = this.linkedOptions[index];
+
+          if (linkedOption !== undefined) {
             const valueMatch =
               searchValue.length > 0
                 ? this.searchInString(option.value, searchValue)
@@ -233,7 +241,7 @@ export class ImprovedSelect extends EventEmitter<
                 ? this.searchInString(option.innerText, searchValue)
                 : false;
 
-            this.linkedOptions[index].classList.toggle(
+            linkedOption.classList.toggle(
               "is-hidden",
               searchValue.length > 0 &&
                 valueMatch !== true &&
@@ -259,23 +267,6 @@ export class ImprovedSelect extends EventEmitter<
     }
   }
 
-  private fixBodyVisibility() {
-    if (this.selectBody) {
-      if (this.isActive) {
-        const { left, width } = this.selectBody.getBoundingClientRect();
-        const scrollBarWidth = window.innerWidth - document.body.clientWidth;
-        const offset = window.innerWidth - (left + width + 16 + scrollBarWidth);
-
-        this.selectBody.style.transform = `translate(${Math.min(
-          offset,
-          0,
-        )}px, 0)`;
-      } else {
-        this.selectBody.removeAttribute("style");
-      }
-    }
-  }
-
   info(): ImprovedSelectInfo {
     return {
       isActive: this.isActive,
@@ -286,11 +277,40 @@ export class ImprovedSelect extends EventEmitter<
     };
   }
 
-  toggle(force?: boolean) {
-    this.isActive = this.element.classList.toggle("is-active", force);
-    if (this.element.hasAttribute("data-improved-select-modal")) {
-      document.body.classList.toggle("no-scroll", this.isActive);
+  private update = async () => {
+    if (this.activeToggleElement !== undefined && this.selectBody !== null) {
+      const { x, y } = await computePosition(
+        this.activeToggleElement,
+        this.selectBody,
+        {
+          placement: "bottom",
+          middleware: [offset(8), flip(), shift({ padding: 12 })],
+        },
+      );
+
+      Object.assign(this.selectBody.style, {
+        left: `${x}px`,
+        top: `${y}px`,
+      });
     }
+  };
+
+  toggle(force?: boolean) {
+    this.cleanup?.();
+    this.isActive = this.element.classList.toggle("is-active", force);
+
+    if (
+      this.isActive === true &&
+      this.activeToggleElement !== undefined &&
+      this.selectBody !== null
+    ) {
+      this.cleanup = autoUpdate(
+        this.activeToggleElement,
+        this.selectBody,
+        this.update,
+      );
+    }
+
     this.dispatch("toggle", this);
   }
 
@@ -302,7 +322,7 @@ export class ImprovedSelect extends EventEmitter<
   }
 
   close() {
-    if (this.isActive) {
+    if (this.isActive === true) {
       this.toggle(false);
       this.dispatch("close", this);
     }
@@ -329,8 +349,10 @@ export class ImprovedSelect extends EventEmitter<
       });
 
       for (const index of this.defaultSelection) {
-        if (this.select.options[index] !== undefined) {
-          this.select.options[index].selected = true;
+        const option = this.select.options[index];
+
+        if (option !== undefined) {
+          option.selected = true;
         }
       }
 

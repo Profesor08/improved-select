@@ -15,12 +15,6 @@
   &[data-improved-select] {
     position: relative;
 
-    &:not(.is-active) {
-      [data-select-body] {
-        display: none;
-      }
-    }
-
     [data-select-option] {
       &.is-hidden {
         display: none !important;
