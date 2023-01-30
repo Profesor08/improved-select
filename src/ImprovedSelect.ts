@@ -19,7 +19,7 @@ type SelectEventType = "open" | "close" | "toggle" | "change";
 
 const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
 
-class Select extends EventEmitter<SelectEventType, ImprovedSelect> {}
+class Select extends EventEmitter<SelectEventType, ImprovedSelect> { }
 
 export class ImprovedSelect extends Select {
   private isActive = false;
@@ -32,6 +32,7 @@ export class ImprovedSelect extends Select {
   private selectBody: HTMLElement | null;
   private searchInput: HTMLInputElement | null;
   private linkedOptions: HTMLElement[] = [];
+  private selectLabel: string | undefined = undefined;
   private selectedValueElements: HTMLElement[] = [];
   private initialSelection: number[] = [];
   private defaultSelection: number[] = [];
@@ -55,6 +56,7 @@ export class ImprovedSelect extends Select {
     this.selectedValueElements = Array.from(
       this.element.querySelectorAll("[data-select-value]"),
     );
+    this.selectLabel = this.selectedValueElements[0]?.innerHTML;
     this.selectBody = this.element.querySelector("[data-select-body]");
     this.searchInput = this.element.querySelector("[data-select-search]");
     this.initToggleBehavior();
@@ -181,10 +183,10 @@ export class ImprovedSelect extends Select {
         selectedOptions.length > 0
           ? this.isHtmlValue
             ? selectedOptions
-                .map((option) => this.linkedOptions[option.index]?.innerHTML)
-                .join(", ")
+              .map((option) => this.linkedOptions[option.index]?.innerHTML)
+              .join(", ")
             : selectedOptions.map((option) => option.innerHTML).join(", ")
-          : "";
+          : this.selectLabel ?? "";
 
       this.isSelected = this.element.classList.toggle(
         "is-selected",
@@ -244,8 +246,8 @@ export class ImprovedSelect extends Select {
             linkedOption.classList.toggle(
               "is-hidden",
               searchValue.length > 0 &&
-                valueMatch !== true &&
-                textMatch !== true,
+              valueMatch !== true &&
+              textMatch !== true,
             );
           }
         });
