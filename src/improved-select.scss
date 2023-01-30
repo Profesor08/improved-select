@@ -91,6 +91,8 @@
   .select-value,
   .select-label,
   .select-placeholder {
+    grid-column: 1;
+    grid-row: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -268,16 +270,6 @@
       margin-top: 17px;
       height: 20px;
       transition: ease opacity 0.3s;
-    }
-
-    .select-label {
-      position: absolute;
-      top: 8px;
-      left: 20px;
-      width: calc(100% - 58px);
-      transform-origin: 0 0;
-      transform: translateY(7px);
-      transition: ease 0.3s;
     }
   }
 
