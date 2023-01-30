@@ -1,6 +1,6 @@
 {
   "name": "@prof-dev/improved-select",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Helper for live clicks events management",
   "main": "lib/ImprovedSelect.js",
   "types": "lib/ImprovedSelect.d.ts",
@@ -8,6 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "sass": "sass src/improved-select.scss lib/improved-select.css",
     "build": "npm run clean && tsc && npm run sass",
+    "build:only": "tsc && npm run sass",
     "clean": "rimraf lib/*"
   },
   "publishConfig": {
@@ -24,12 +25,14 @@
   },
   "homepage": "https://github.com/Profesor08/improved-select#readme",
   "devDependencies": {
+    "@types/lodash": "^4.14.191",
     "rimraf": "^3.0.2",
     "sass": "^1.57.1",
     "typescript": "^4.9.4"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.1.0",
-    "@prof-dev/event-emitter": "^1.0.9"
+    "@prof-dev/event-emitter": "^1.0.9",
+    "lodash": "^4.17.21"
   }
 }

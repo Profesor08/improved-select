@@ -6,7 +6,7 @@ import {
   offset,
   shift,
 } from "@floating-ui/dom";
-import { arrayEqual } from "./utils";
+import { isEqual } from "lodash";
 
 type ImprovedSelectInfo = {
   isActive: boolean;
@@ -88,7 +88,8 @@ export class ImprovedSelect extends Select {
 
       if (
         this.defaultSelection.length === 0 &&
-        this.select.options.length > 0
+        this.select.options.length > 0 &&
+        this.select.multiple === false
       ) {
         this.defaultSelection.push(0);
       }
@@ -211,7 +212,7 @@ export class ImprovedSelect extends Select {
 
       this.element.classList.toggle(
         "is-changed",
-        arrayEqual(
+        isEqual(
           this.defaultSelection,
           selectedOptions.map((option) => option.index),
         ) === false,
