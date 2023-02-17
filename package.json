@@ -9,6 +9,7 @@
     "sass": "sass src/improved-select.scss lib/improved-select.css",
     "build": "npm run clean && tsc && npm run sass",
     "build:only": "tsc && npm run sass",
+    "publish:patch": "npm version patch && npm run build && npm publish",
     "clean": "rimraf lib/*"
   },
   "publishConfig": {
