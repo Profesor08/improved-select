@@ -19,7 +19,7 @@ type SelectEventType = "open" | "close" | "toggle" | "change";
 
 const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
 
-class Select extends EventEmitter<SelectEventType, ImprovedSelect> { }
+class Select extends EventEmitter<SelectEventType, ImprovedSelect> {}
 
 export class ImprovedSelect extends Select {
   private isActive = false;
@@ -184,8 +184,8 @@ export class ImprovedSelect extends Select {
         selectedOptions.length > 0
           ? this.isHtmlValue
             ? selectedOptions
-              .map((option) => this.linkedOptions[option.index]?.innerHTML)
-              .join(", ")
+                .map((option) => this.linkedOptions[option.index]?.innerHTML)
+                .join(", ")
             : selectedOptions.map((option) => option.innerHTML).join(", ")
           : this.selectLabel ?? "";
 
@@ -247,8 +247,8 @@ export class ImprovedSelect extends Select {
             linkedOption.classList.toggle(
               "is-hidden",
               searchValue.length > 0 &&
-              valueMatch !== true &&
-              textMatch !== true,
+                valueMatch !== true &&
+                textMatch !== true,
             );
           }
         });
@@ -270,7 +270,7 @@ export class ImprovedSelect extends Select {
     }
   }
 
-  info(): ImprovedSelectInfo {
+  public info(): ImprovedSelectInfo {
     return {
       isActive: this.isActive,
       isSearchActive: this.isSearchActive,
@@ -298,7 +298,7 @@ export class ImprovedSelect extends Select {
     }
   };
 
-  toggle(force?: boolean) {
+  public toggle(force?: boolean) {
     this.cleanup?.();
     this.isActive = this.element.classList.toggle("is-active", force);
 
@@ -317,21 +317,21 @@ export class ImprovedSelect extends Select {
     this.dispatch("toggle", this);
   }
 
-  open() {
+  public open() {
     if (this.isActive === false) {
       this.toggle(true);
       this.dispatch("open", this);
     }
   }
 
-  close() {
+  public close() {
     if (this.isActive === true) {
       this.toggle(false);
       this.dispatch("close", this);
     }
   }
 
-  updateDisabledOptions() {
+  public updateDisabledOptions() {
     if (this.select) {
       const options = Array.from(this.select.options);
 
@@ -345,7 +345,7 @@ export class ImprovedSelect extends Select {
     }
   }
 
-  reset = () => {
+  public reset = () => {
     if (this.select) {
       Array.from(this.select.options).forEach((option) => {
         option.selected = false;
@@ -367,7 +367,7 @@ export class ImprovedSelect extends Select {
     }
   };
 
-  clear() {
+  public clear() {
     if (this.select) {
       Array.from(this.select.options).forEach((option) => {
         option.selected = false;
@@ -379,6 +379,10 @@ export class ImprovedSelect extends Select {
         }),
       );
     }
+  }
+
+  public getSelectedOptions(): HTMLOptionElement[] {
+    return Array.from(this.select?.selectedOptions ?? []);
   }
 
   static create(element: HTMLElement): ImprovedSelect {
