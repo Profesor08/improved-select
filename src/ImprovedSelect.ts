@@ -2,7 +2,6 @@ import { EventEmitter } from "@prof-dev/event-emitter";
 import {
   autoUpdate,
   computePosition,
-  ComputePositionConfig,
   flip,
   offset,
   Placement,
@@ -44,7 +43,7 @@ export class ImprovedSelect extends Select {
   private initialSelection: number[] = [];
   private defaultSelection: number[] = [];
   private isHtmlValue: boolean = false;
-  private options: Partial<ComputePositionConfig> = {};
+  private options: SelectOptions = {};
   private cleanup?: () => void;
 
   constructor(private element: HTMLElement, options: SelectOptions = {}) {
@@ -300,8 +299,7 @@ export class ImprovedSelect extends Select {
         this.activeToggleElement,
         this.selectBody,
         {
-          strategy: this.options.strategy,
-          placement: "bottom",
+          ...this.options,
           middleware: [offset(8), flip(), shift({ padding: 12 })],
         },
       );
