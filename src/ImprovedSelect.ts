@@ -2,9 +2,12 @@ import { EventEmitter } from "@prof-dev/event-emitter";
 import {
   autoUpdate,
   computePosition,
+  ComputePositionConfig,
   flip,
   offset,
+  Placement,
   shift,
+  Strategy,
 } from "@floating-ui/dom";
 import { isEqual } from "lodash";
 
@@ -16,6 +19,10 @@ type ImprovedSelectInfo = {
   select: HTMLSelectElement | null;
 };
 type SelectEventType = "open" | "close" | "toggle" | "change";
+type SelectOptions = Partial<{
+  placement?: Placement;
+  strategy?: Strategy;
+}>;
 
 const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
 
@@ -37,10 +44,17 @@ export class ImprovedSelect extends Select {
   private initialSelection: number[] = [];
   private defaultSelection: number[] = [];
   private isHtmlValue: boolean = false;
+  private options: Partial<ComputePositionConfig> = {};
   private cleanup?: () => void;
 
-  constructor(private element: HTMLElement) {
+  constructor(private element: HTMLElement, options: SelectOptions = {}) {
     super();
+
+    this.options = {
+      ...this.options,
+      ...options,
+    };
+
     this.isActive = this.element.classList.contains("is-active");
     this.isHtmlValue = this.element.hasAttribute("data-select-html-value");
     this.toggleElements = Array.from(
@@ -286,6 +300,7 @@ export class ImprovedSelect extends Select {
         this.activeToggleElement,
         this.selectBody,
         {
+          strategy: this.options.strategy,
           placement: "bottom",
           middleware: [offset(8), flip(), shift({ padding: 12 })],
         },
@@ -385,23 +400,26 @@ export class ImprovedSelect extends Select {
     return Array.from(this.select?.selectedOptions ?? []);
   }
 
-  static create(element: HTMLElement): ImprovedSelect {
+  static create(
+    element: HTMLElement,
+    options: SelectOptions = {},
+  ): ImprovedSelect {
     const instance = improvedSelectElementsMap.get(element);
 
     if (instance !== undefined) {
       return instance;
     }
 
-    return new ImprovedSelect(element);
+    return new ImprovedSelect(element, options);
   }
 
-  static initAllAvailableOnPage() {
+  static initAllAvailableOnPage(options: SelectOptions = {}) {
     document
       .querySelectorAll<HTMLElement>(
         `[data-improved-select]:not([data-improved-select="initialized"])`,
       )
       .forEach((element) => {
-        ImprovedSelect.create(element);
+        ImprovedSelect.create(element, options);
       });
   }
 
