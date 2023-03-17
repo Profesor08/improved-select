@@ -21,6 +21,7 @@ type SelectEventType = "open" | "close" | "toggle" | "change";
 type SelectOptions = Partial<{
   placement?: Placement;
   strategy?: Strategy;
+  style?: () => Record<string, string>;
 }>;
 
 const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
@@ -34,7 +35,7 @@ export class ImprovedSelect extends Select {
   private toggleElements: HTMLElement[] = [];
   private activeToggleElement?: HTMLElement;
   private closeElements: HTMLElement[] = [];
-  private select: HTMLSelectElement | null;
+  public readonly select: HTMLSelectElement | null;
   private selectBody: HTMLElement | null;
   private searchInput: HTMLInputElement | null;
   private linkedOptions: HTMLElement[] = [];
@@ -44,15 +45,20 @@ export class ImprovedSelect extends Select {
   private defaultSelection: number[] = [];
   private isHtmlValue: boolean = false;
   private options: SelectOptions = {};
+  private selectObserver: MutationObserver;
   private cleanup?: () => void;
 
-  constructor(private element: HTMLElement, options: SelectOptions = {}) {
+  constructor(
+    public readonly element: HTMLElement,
+    options: SelectOptions = {},
+  ) {
     super();
 
     this.options = {
       ...this.options,
       ...options,
     };
+    this.selectObserver = new MutationObserver(this.onSelectAttributesChange);
 
     this.isActive = this.element.classList.contains("is-active");
     this.isHtmlValue = this.element.hasAttribute("data-select-html-value");
@@ -74,18 +80,27 @@ export class ImprovedSelect extends Select {
     this.searchInput = this.element.querySelector("[data-select-search]");
     this.initToggleBehavior();
     this.initCloseBehavior();
+    this.initLinkedOptions();
     this.initSelectBehavior();
     this.initSearchBehavior();
     this.initChangeStateBehavior();
     this.initResetBehavior();
     this.updateActiveState();
+    this.onSelectAttributesChange();
     this.element.setAttribute("data-improved-select", "initialized");
+    improvedSelectElementsMap.set(element, this);
+  }
+
+  private onSelectAttributesChange = () => {
+    this.element.classList.toggle(
+      "is-disabled",
+      this.select?.disabled === true,
+    );
     this.element.classList.toggle(
       "is-multiple",
       this.select?.multiple === true,
     );
-    improvedSelectElementsMap.set(element, this);
-  }
+  };
 
   private initChangeStateBehavior() {
     if (this.select) {
@@ -132,35 +147,13 @@ export class ImprovedSelect extends Select {
   }
 
   private initSelectBehavior() {
-    this.linkedOptions.forEach((linkedOption, index) => {
-      linkedOption.addEventListener("click", () => {
-        if (this.select !== null && this.select.options[index] !== undefined) {
-          const option = this.select.options[index];
-
-          if (option !== undefined) {
-            if (this.select.multiple) {
-              option.selected = !option.selected;
-            } else {
-              option.selected = true;
-            }
-          }
-
-          this.select.dispatchEvent(
-            new Event("change", {
-              bubbles: true,
-            }),
-          );
-        }
-
-        if (this.select === null || this.select.multiple === false) {
-          this.close();
-        }
-      });
-    });
-
     if (this.select) {
       this.select.addEventListener("change", () => {
         this.dispatch("change", this);
+      });
+
+      this.selectObserver.observe(this.select, {
+        attributes: true,
       });
     }
 
@@ -168,6 +161,41 @@ export class ImprovedSelect extends Select {
       this.updateActiveState();
     });
   }
+
+  private initLinkedOptions() {
+    this.linkedOptions.forEach((linkedOption, index) => {
+      const value = this.select?.options[index]?.value;
+      linkedOption.dataset.selectOption = value;
+      linkedOption.removeEventListener("click", this.onLinkedOptionClick);
+      linkedOption.addEventListener("click", this.onLinkedOptionClick);
+    });
+  }
+
+  private onLinkedOptionClick = (event: MouseEvent) => {
+    const linkedOption = event.currentTarget as HTMLElement;
+    const value = linkedOption.dataset.selectOption;
+    const option = Array.from(this.select?.options ?? []).find(
+      (option) => option.value === value,
+    );
+
+    if (option !== undefined) {
+      if (this.select?.multiple === true) {
+        option.selected = !option.selected;
+      } else {
+        option.selected = true;
+      }
+    }
+
+    this.select?.dispatchEvent(
+      new Event("change", {
+        bubbles: true,
+      }),
+    );
+
+    if (this.select?.multiple === false) {
+      this.close();
+    }
+  };
 
   private initSearchBehavior() {
     if (this.searchInput) {
@@ -283,6 +311,14 @@ export class ImprovedSelect extends Select {
     }
   }
 
+  public updateOptions() {
+    this.linkedOptions = Array.from(
+      this.element.querySelectorAll("[data-select-option]"),
+    );
+
+    this.initLinkedOptions();
+  }
+
   public info(): ImprovedSelectInfo {
     return {
       isActive: this.isActive,
@@ -299,7 +335,8 @@ export class ImprovedSelect extends Select {
         this.activeToggleElement,
         this.selectBody,
         {
-          ...this.options,
+          strategy: this.options.strategy,
+          placement: this.options.placement,
           middleware: [offset(8), flip(), shift({ padding: 12 })],
         },
       );
@@ -307,6 +344,7 @@ export class ImprovedSelect extends Select {
       Object.assign(this.selectBody.style, {
         left: `${x}px`,
         top: `${y}px`,
+        ...this.options.style?.(),
       });
     }
   };
@@ -421,7 +459,11 @@ export class ImprovedSelect extends Select {
       });
   }
 
-  static getInstance(element: HTMLElement) {
+  static getInstance(element: HTMLElement | null): ImprovedSelect | undefined {
+    if (element == null) {
+      return undefined;
+    }
+
     return improvedSelectElementsMap.get(element);
   }
 
