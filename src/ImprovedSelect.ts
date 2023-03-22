@@ -217,9 +217,9 @@ export class ImprovedSelect extends Select {
     }
   }
 
-  private updateActiveState() {
+  private updateSelectedValues() {
     if (this.select) {
-      const selectedOptions = Array.from(this.select.selectedOptions);
+      const selectedOptions = this.getSelectedOptions();
 
       const selectedValuesText =
         selectedOptions.length > 0
@@ -230,14 +230,22 @@ export class ImprovedSelect extends Select {
             : selectedOptions.map((option) => option.innerHTML).join(", ")
           : this.selectLabel ?? "";
 
+      this.selectedValueElements.forEach((selectedValueElement) => {
+        selectedValueElement.innerHTML = selectedValuesText;
+      });
+    }
+  }
+
+  private updateActiveState() {
+    if (this.select) {
+      const selectedOptions = this.getSelectedOptions();
+
+      this.updateSelectedValues();
+
       this.isSelected = this.element.classList.toggle(
         "is-selected",
         selectedOptions.length > 0,
       );
-
-      this.selectedValueElements.forEach((selectedValueElement) => {
-        selectedValueElement.innerHTML = selectedValuesText;
-      });
 
       this.linkedOptions.forEach((linkedOption, index) => {
         if (this.select) {
@@ -317,6 +325,8 @@ export class ImprovedSelect extends Select {
     );
 
     this.initLinkedOptions();
+
+    this.updateSelectedValues();
   }
 
   public info(): ImprovedSelectInfo {
