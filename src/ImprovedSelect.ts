@@ -108,6 +108,12 @@ export class ImprovedSelect extends Select {
         this.initialSelection.push(option.index);
       }
 
+      this.updateDefaultSelection();
+    }
+  }
+
+  private updateDefaultSelection() {
+    if (this.select) {
       for (const option of Array.from(this.select.options)) {
         if (option.hasAttribute("data-select-default")) {
           this.defaultSelection.push(option.index);
@@ -326,7 +332,13 @@ export class ImprovedSelect extends Select {
 
     this.initLinkedOptions();
 
-    this.updateSelectedValues();
+    this.updateDefaultSelection();
+
+    this.select?.dispatchEvent(
+      new Event("change", {
+        bubbles: true,
+      }),
+    );
   }
 
   public info(): ImprovedSelectInfo {
