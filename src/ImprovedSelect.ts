@@ -446,6 +446,14 @@ export class ImprovedSelect extends Select {
     return Array.from(this.select?.selectedOptions ?? []);
   }
 
+  public disable(force?: boolean) {
+    if (this.select) {
+      this.select.disabled = force ?? true;
+
+      this.onSelectAttributesChange();
+    }
+  }
+
   static create(
     element: HTMLElement,
     options: SelectOptions = {},
