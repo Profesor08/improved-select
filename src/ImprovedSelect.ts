@@ -375,6 +375,10 @@ export class ImprovedSelect extends Select {
     this.cleanup?.();
     this.isActive = this.element.classList.toggle("is-active", force);
 
+    this.toggleElements.forEach((element) => {
+      element.classList.toggle("is-active", force);
+    });
+
     if (
       this.isActive === true &&
       this.activeToggleElement !== undefined &&
