@@ -325,7 +325,7 @@ export class ImprovedSelect extends Select {
     }
   }
 
-  public updateOptions() {
+  public updateOptions(triggerChange: boolean = true) {
     this.linkedOptions = Array.from(
       this.element.querySelectorAll("[data-select-option]"),
     );
@@ -334,11 +334,13 @@ export class ImprovedSelect extends Select {
 
     this.updateDefaultSelection();
 
-    this.select?.dispatchEvent(
-      new Event("change", {
-        bubbles: true,
-      }),
-    );
+    if (triggerChange === true) {
+      this.select?.dispatchEvent(
+        new Event("change", {
+          bubbles: true,
+        }),
+      );
+    }
   }
 
   public info(): ImprovedSelectInfo {
