@@ -41,6 +41,7 @@ export class ImprovedSelect extends Select {
   private linkedOptions: HTMLElement[] = [];
   private selectLabel: string | undefined = undefined;
   private selectedValueElements: HTMLElement[] = [];
+  private form: HTMLFormElement | null;
   private initialSelection: number[] = [];
   private defaultSelection: number[] = [];
   private isHtmlValue: boolean = false;
@@ -59,7 +60,7 @@ export class ImprovedSelect extends Select {
       ...options,
     };
     this.selectObserver = new MutationObserver(this.onSelectAttributesChange);
-
+    this.form = this.element.closest("form");
     this.isActive = this.element.classList.contains("is-active");
     this.isHtmlValue = this.element.hasAttribute("data-select-html-value");
     this.toggleElements = Array.from(
@@ -220,6 +221,10 @@ export class ImprovedSelect extends Select {
   private initResetBehavior() {
     if (this.select) {
       this.select.addEventListener("reset", this.reset);
+    }
+
+    if (this.form !== null) {
+      this.form.addEventListener("reset", this.reset);
     }
   }
 
