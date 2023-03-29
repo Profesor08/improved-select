@@ -224,7 +224,7 @@ export class ImprovedSelect extends Select {
     }
 
     if (this.form !== null) {
-      this.form.addEventListener("reset", this.reset);
+      this.form.addEventListener("reset", this.onFormReset);
     }
   }
 
@@ -428,6 +428,20 @@ export class ImprovedSelect extends Select {
       });
     }
   }
+
+  private onFormReset = () => {
+    if (this.select) {
+      Array.from(this.select.options).forEach((option) => {
+        option.selected = option.hasAttribute("selected");
+      });
+
+      this.select.dispatchEvent(
+        new Event("change", {
+          bubbles: true,
+        }),
+      );
+    }
+  };
 
   public reset = () => {
     if (this.select) {
