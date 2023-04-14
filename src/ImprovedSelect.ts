@@ -24,7 +24,12 @@ type SelectOptions = Partial<{
   style?: () => Record<string, string>;
 }>;
 
-const improvedSelectElementsMap = new Map<HTMLElement, ImprovedSelect>();
+const improvedSelectElementsMap =
+  window.improvedSelectElementsMap ?? new Map<HTMLElement, ImprovedSelect>();
+
+if (window.improvedSelectElementsMap === undefined) {
+  window.improvedSelectElementsMap = improvedSelectElementsMap;
+}
 
 class Select extends EventEmitter<SelectEventType, ImprovedSelect> {}
 
