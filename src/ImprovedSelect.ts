@@ -496,7 +496,10 @@ export class ImprovedSelect extends Select {
         `[data-improved-select]:not([data-improved-select="initialized"])`,
       )
       .forEach((element) => {
-        ImprovedSelect.create(element, options);
+        ImprovedSelect.create(element, {
+          ...options,
+          placement: element.dataset["placement"] as Placement,
+        });
       });
   }
 
