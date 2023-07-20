@@ -8,7 +8,7 @@ import {
   shift,
   Strategy,
 } from "@floating-ui/dom";
-import { isEqual } from "lodash-es";
+import isEqual from "lodash/isEqual";
 
 type ImprovedSelectInfo = {
   isActive: boolean;
