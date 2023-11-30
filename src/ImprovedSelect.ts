@@ -23,6 +23,8 @@ type SelectOptions = Partial<{
   strategy?: Strategy;
   style?: (instance: ImprovedSelect) => Record<string, string>;
   fitWidth?: boolean;
+  offset?: Parameters<typeof offset>[0];
+  shift?: Parameters<typeof shift>[0];
 }>;
 
 const improvedSelectElementsMap =
@@ -367,7 +369,11 @@ export class ImprovedSelect extends Select {
         {
           strategy: this.options.strategy,
           placement: this.options.placement,
-          middleware: [offset(8), flip(), shift({ padding: 12 })],
+          middleware: [
+            offset(this.options.offset ?? 8),
+            flip(),
+            shift(this.options.shift ?? { padding: 12 }),
+          ],
         },
       );
 
