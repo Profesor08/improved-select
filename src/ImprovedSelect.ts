@@ -22,6 +22,7 @@ type SelectOptions = Partial<{
   placement?: Placement;
   strategy?: Strategy;
   style?: (instance: ImprovedSelect) => Record<string, string>;
+  fitWidth?: boolean;
 }>;
 
 const improvedSelectElementsMap =
@@ -373,6 +374,9 @@ export class ImprovedSelect extends Select {
       Object.assign(this.selectBody.style, {
         left: `${x}px`,
         top: `${y}px`,
+        minWidth: this.options.fitWidth
+          ? `${this.element.clientWidth}px`
+          : undefined,
         ...this.options.style?.(this),
       });
     }
