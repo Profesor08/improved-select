@@ -1,4 +1,3 @@
-import { EventEmitter } from "@prof-dev/event-emitter";
 import {
   autoUpdate,
   computePosition,
@@ -8,6 +7,7 @@ import {
   shift,
   Strategy,
 } from "@floating-ui/dom";
+import { EventEmitter } from "@prof-dev/event-emitter";
 import isEqual from "lodash/isEqual";
 
 type ImprovedSelectInfo = {
@@ -21,7 +21,7 @@ type SelectEventType = "open" | "close" | "toggle" | "change";
 type SelectOptions = Partial<{
   placement?: Placement;
   strategy?: Strategy;
-  style?: () => Record<string, string>;
+  style?: (instance: ImprovedSelect) => Record<string, string>;
 }>;
 
 const improvedSelectElementsMap =
@@ -373,7 +373,7 @@ export class ImprovedSelect extends Select {
       Object.assign(this.selectBody.style, {
         left: `${x}px`,
         top: `${y}px`,
-        ...this.options.style?.(),
+        ...this.options.style?.(this),
       });
     }
   };
